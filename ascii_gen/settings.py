@@ -72,9 +72,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    # ADD THIS LINE AT THE BOTTOM:
-    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'ascii_gen.urls'
