@@ -1,9 +1,6 @@
 venv/
-<<<<<<< HEAD
 __pycache__/
 *.pyc
 .env
-=======
-*.pyc
-__pycache__/
->>>>>>> d4ddc5d (Add .gitignore and remove venv from tracking)
+.vscode/
+db.sqlite3
