@@ -10,13 +10,13 @@ urlpatterns = [
     path('delete/<int:art_id>/', views.delete_art, name='delete_art'),
     path('save/confirm/', views.save_confirm_view, name='save_confirm'),
     
-    # Your custom auth URLs (BEFORE allauth)
+    # Your custom auth URLs (keep if you need them)
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     
-    # Allauth for social login only
-    path('social/', include('allauth.urls')),  # Changed from 'accounts/' to 'social/'
+    # Change this line back to 'accounts/' instead of 'social/':
+    path('accounts/', include('allauth.urls')),  # CHANGED FROM 'social/'
     
     # Account management URLs
     path('account/', views.account_view, name='account'),
