@@ -50,7 +50,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
@@ -58,15 +57,12 @@ SOCIALACCOUNT_PROVIDERS = {
             'secret': 'YOUR_CLIENT_SECRET_HERE',
             'key': ''
         },
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
     }
 }
+
+
 SITE_ID = 1
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
