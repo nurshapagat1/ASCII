@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'generator/index.css' %}">
+{% block title %}GALLERY // ASCII_STUDIO{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --terminal-green: #00ff41;
+        --terminal-yellow: #ffb000;
+        --terminal-bg: #0a0a0b;
+        --ui-border: #2a2a2e;
+        --ui-accent: #3d3d42;
+        --text-main: #e1e1e6;
+        --text-dim: #88888e;
+        --glass: rgba(255, 255, 255, 0.03);
+    }
+
+    body {
+        background-color: #0f0f11;
+        background-image: 
+            linear-gradient(var(--glass) 1px, transparent 1px),
+            linear-gradient(90deg, var(--glass) 1px, transparent 1px);
+        background-size: 30px 30px;
+        color: var(--text-main);
+        font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    }
+
+    /* --- HEADER DESIGN --- */
+    .gallery-dashboard {
+        padding: 40px 2rem;
+        border-bottom: 2px solid var(--ui-border);
+        background: rgba(15, 15, 17, 0.8);
+        backdrop-filter: blur(10px);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 3rem;
+    }
+
+    .brand-section .status-tag {
+        font-size: 0.7rem;
+        background: var(--terminal-yellow);
+        color: #000;
+        padding: 2px 8px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    .brand-section h1 {
+        font-size: 2.5rem;
+        margin: 0;
+        letter-spacing: -2px;
+        text-transform: uppercase;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .stats-box {
+        text-align: right;
+        border-left: 1px solid var(--ui-accent);
+        padding-left: 20px;
+    }
+
+    .stats-box .label {
+        color: var(--text-dim);
+        font-size: 0.75rem;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    /* --- GRID --- */
+    .history-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 30px;
+        padding: 0 2rem 5rem;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    /* --- CARD DESIGN --- */
+    .ascii-card {
+        background: #16161a;
+        border: 1px solid var(--ui-border);
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Corner Accents */
+    .ascii-card::before, .ascii-card::after {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-color: var(--terminal-yellow);
+        border-style: solid;
+        pointer-events: none;
+    }
+    .ascii-card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .ascii-card::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    .ascii-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--ui-accent);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .card-meta {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--ui-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255,255,255,0.02);
+    }
+
+    .user-tag {
+        color: var(--terminal-green);
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .timestamp {
+        color: var(--text-dim);
+        font-size: 0.7rem;
+    }
+
+    .ascii-viewport {
+        background: #000;
+        padding: 25px;
+        height: 300px;
+        overflow: auto;
+        position: relative;
+    }
+
+    /* Scanline Effect */
+    .ascii-viewport::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 2px, 3px 100%;
+        pointer-events: none;
+    }
+
+    .ascii-viewport pre {
+        margin: 0;
+        color: #fff;
+        font-size: 10px;
+        line-height: 1.1;
+        white-space: pre;
+    }
+
+    .card-info {
+        padding: 20px;
+        flex-grow: 1;
+    }
+
+    .card-info h3 {
+        margin: 0 0 15px 0;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        color: var(--text-main);
+    }
+
+    .card-actions {
+        padding: 15px 20px;
+        border-top: 1px solid var(--ui-border);
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-ui {
+        background: var(--ui-accent);
+        border: none;
+        color: var(--text-main);
+        padding: 8px 15px;
+        font-family: inherit;
+        font-size: 0.75rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.2s;
+    }
+
+    .btn-ui:hover {
+        background: var(--text-main);
+        color: #000;
+    }
+
+    .btn-ui.primary {
+        background: var(--terminal-yellow);
+        color: #000;
+    }
+
+    /* Custom Scrollbar */
+    .ascii-viewport::-webkit-scrollbar { width: 4px; height: 4px; }
+    .ascii-viewport::-webkit-scrollbar-thumb { background: var(--ui-accent); }
+
+    /* Empty State */
+    .empty-signal {
+        grid-column: 1/-1;
+        text-align: center;
+        padding: 100px 20px;
+        border: 2px dashed var(--ui-border);
+    }
+
+    @media (max-width: 768px) {
+        .gallery-dashboard { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .history-grid { grid-template-columns: 1fr; padding: 1rem; }
+    }
+</style>
+
+<header class="gallery-dashboard">
+    <div class="brand-section">
+        <div class="status-tag">SYSTEM_ONLINE</div>
+        <h1>Global_Stream</h1>
+    </div>
+    <div class="stats-box">
+        <span class="label">ACTIVE_TRANSMISSIONS</span>
+        <code style="color: var(--terminal-green); font-size: 1.2rem;">{{ feed|length|stringformat:"03d" }}</code>
+    </div>
+</header>
+
+<main class="history-grid">
+    {% for post in feed %}
+    <article class="ascii-card">
+        <div class="card-meta">
+            <span class="user-tag">@{{ post.user.username|upper }}</span>
+            <span class="timestamp">ID_{{ post.id|add:"1000" }} // {{ post.created_at|date:"H:i" }} GMT</span>
+        </div>
+
+        <div class="ascii-viewport">
+            <pre>{{ post.ascii_text }}</pre>
+        </div>
+
+        <div class="card-info">
+            <h3>{{ post.title }}</h3>
+            <div style="font-size: 0.7rem; color: var(--text-dim);">
+                SOURCE: {{ post.user.username|slugify }}_node
+            </div>
+        </div>
+
+        <div class="card-actions">
+            <button class="btn-ui primary" onclick="copyToClipboard(this, `{{ post.ascii_text|escapejs }}`)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                CLONE_DATA
+            </button>
+            <div style="margin-left: auto; align-self: center; font-size: 0.7rem; color: var(--text-dim);">
+                {{ post.created_at|timesince }} AGO
+            </div>
+        </div>
+    </article>
+    {% empty %}
+    <div class="empty-signal">
+        <h2 style="color: var(--terminal-yellow);">[!] NO_SIGNAL_DETECTED</h2>
+        <p style="color: var(--text-dim);">The public transmission frequency is currently empty.</p>
+        <a href="{% url 'index' %}" class="btn-ui primary" style="display: inline-flex; margin-top: 20px; text-decoration: none;">INITIATE_BROADCAST</a>
+    </div>
+    {% endfor %}
+</main>
+
+<script>
+function copyToClipboard(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = 'DATA_COPIED';
+        btn.style.background = 'var(--terminal-green)';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+            btn.style.background = '';
+        }, 1500);
+    });
+}
+</script>
+{% endblock %}

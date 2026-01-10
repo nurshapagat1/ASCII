@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ASCII_STUDIO{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'generator/index.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --terminal-bg: #0a0a0b;
+            --terminal-body: #0f0f11;
+            --ui-border: #2a2a2e;
+            --ui-accent: #3d3d42;
+            --secure-cyan: #00f2ff;
+            --system-blue: #00d2ff;
+            --cyber-purple: #8a2be2;
+            --terminal-green: #00ff41;
+            --terminal-red: #ff3e3e;
+            --text-main: #e1e1e6;
+            --text-dim: #88888e;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+
+        /* --- FLEXBOX LAYOUT FOR STICKY FOOTER --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            background-color: var(--terminal-body);
+            background-image: 
+                linear-gradient(var(--glass) 1px, transparent 1px),
+                linear-gradient(90deg, var(--glass) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            
+            /* Magic for Footer */
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- HEADER / NAV --- */
+        .header {
+            background: rgba(10, 10, 11, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--ui-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-shrink: 0; /* Header won't shrink */
+        }
+
+        .logo-text {
+            font-size: 1.4rem; font-weight: 800; letter-spacing: -1px; color: #fff;
+            display: flex; align-items: center; gap: 8px; text-decoration: none;
+        }
+
+        .logo-dot {
+            width: 8px; height: 8px; background: var(--system-blue);
+            box-shadow: 0 0 10px var(--system-blue); border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+
+        /* --- MAIN CONTENT AREA --- */
+        main {
+            flex: 1 0 auto; /* This tells the main content to take up all available space */
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- ADAPTED INDUSTRIAL FOOTER --- */
+        footer {
+            flex-shrink: 0; /* Footer won't shrink */
+            background: var(--terminal-bg);
+            padding: 2rem;
+            border-top: 2px solid var(--ui-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            position: relative;
+        }
+
+        /* Connecting Bridge Line (Adapted for Index) */
+        footer::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50px;
+            width: 1px;
+            height: 20px;
+            background: var(--ui-border);
+        }
+
+        .footer-brand .status {
+            color: var(--terminal-green);
+            font-size: 0.65rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .blinking-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--terminal-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--terminal-green);
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+        .footer-links { display: flex; gap: 2.5rem; }
+
+        .footer-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .footer-link:hover { color: var(--secure-cyan); transform: translateX(3px); }
+
+        .sys-clock {
+            font-family: 'JetBrains Mono';
+            color: var(--ui-accent);
+            font-size: 0.7rem;
+            border-left: 1px solid var(--ui-accent);
+            padding-left: 15px;
+        }
+
+        /* Dropdown & Auth UI */
+        .user-btn { background: var(--ui-accent); border: 1px solid var(--ui-border); padding: 6px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #fff; font-family: inherit; font-size: 0.75rem; }
+        .dropdown-menu { display: none; position: absolute; top: calc(100% + 10px); right: 0; background: var(--terminal-bg); border: 1px solid var(--system-blue); min-width: 200px; z-index: 1001; }
+        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: var(--text-main); text-decoration: none; font-size: 0.7rem; font-weight: bold; }
+        .dropdown-item:hover { background: var(--system-blue); color: #000; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 1rem; }
+            footer { flex-direction: column; text-align: center; }
+            .footer-links { flex-direction: column; gap: 1rem; }
+            .sys-clock { border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="/" class="logo-section" style="text-decoration: none;">
+            <div class="logo-text">
+                ASCII_STUDIO
+                <div class="logo-dot"></div>
+            </div>
+            <span style="font-size: 0.6rem; color: var(--text-dim); letter-spacing: 2px; font-weight: bold;">CORE_OS // v1.0</span>
+        </a>
+        
+        <nav class="auth-nav" style="display: flex; gap: 1.5rem; align-items: center;">
+            {% if user.is_authenticated %}
+                <div class="user-dropdown">
+                    <button class="user-btn" onclick="toggleDropdown()">
+                        <span style="color: var(--system-blue);">{{ user.username|upper }}</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.6rem;"></i>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="{% url 'account' %}" class="dropdown-item"><i class="fas fa-sliders-h"></i> CONTROL_PANEL</a>
+                        <a href="{% url 'history' %}" class="dropdown-item"><i class="fas fa-database"></i> LOCAL_ARCHIVE</a>
+                        <hr style="border:0; border-top:1px solid var(--ui-border); margin:0;">
+                        <form action="{% url 'logout' %}" method="post" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item" style="width:100%; background:none; border:none; cursor:pointer; font-family:inherit; text-align:left;">
+                                <i class="fas fa-power-off"></i> DISCONNECT
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{% url 'login' %}" style="color: var(--text-dim); text-decoration: none; font-size: 0.75rem; font-weight: bold;">LOGIN</a>
+                <a href="{% url 'register' %}" style="color: var(--secure-cyan); text-decoration: none; font-size: 0.75rem; font-weight: bold; border: 1px solid var(--secure-cyan); padding: 5px 10px;">INITIALIZE</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-brand">
+            <span style="font-weight: 800; font-size: 0.85rem; letter-spacing: 1px;">ASCII_CORP © 2026</span>
+            <div class="status">
+                <div class="blinking-dot"></div>
+                SYSTEM_STATUS: OPERATIONAL
+            </div>
+        </div>
+        
+        <div class="footer-links">
+            <a href="{% url 'gallery' %}" class="footer-link"><i class="fas fa-stream"></i> GLOBAL_FEED</a>
+            <a href="{% url 'about' %}" class="footer-link">SYSTEM_INFO</a>
+            <a href="{% url 'privacy' %}" class="footer-link">PROTOCOLS</a>
+        </div>
+
+        <div class="sys-clock" id="terminalClock">
+            00:00:00 UTC
+        </div>
+    </footer>
+
+    <!-- LOADER OVERLAYS (Keep these as they were) -->
+    <div id="loader" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+        <div style="border:1px solid var(--system-blue); padding:30px; background:#000; text-align:center;">
+            <div class="spinner-scan" style="width:40px; height:40px; border:2px solid var(--ui-accent); border-top-color:var(--system-blue); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 20px;"></div>
+            <span style="font-size: 0.7rem; letter-spacing: 2px;">LOADING_RESOURCES...</span>
+        </div>
+    </div>
+
+    <script>
+        // Terminal Clock
+        function updateClock() {
+            const now = new Date();
+            const time = now.toISOString().split('T')[1].split('.')[0];
+            document.getElementById('terminalClock').textContent = time + ' UTC';
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        window.onclick = function(e) {
+            if (!e.target.closest('.user-dropdown')) {
+                document.getElementById('dropdownMenu').style.display = 'none';
+            }
+        }
+    </script>

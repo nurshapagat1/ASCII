@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+{% load socialaccount %}
+
+<link rel="stylesheet" href="{% static 'generator/index.css' %}">
+
+{% block content %}
+<section class="module-section" style="max-width: 450px; margin: 0 auto;">
+    
+    <div class="card">
+        <div class="sticker yellow">AUTH_GATEWAY</div>
+        
+        <div class="card-header">
+            <span class="header-text">IDENTITY_VERIFICATION</span>
+            <span class="header-text">[LOCKED]</span>
+        </div>
+
+        <div style="padding: 40px;">
+            <!-- Google Login Button - FIXED URL -->
+            <a href="{% provider_login_url 'google' %}" class="primary-btn" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px; background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-light);">
+                <span style="font-weight: 900; color: #DB4437;">G</span> ACCESS_VIA_GOOGLE ↗
+            </a>
+
+            <div style="text-align: center; margin-bottom: 30px; position: relative;">
+                <hr style="border: none; border-top: 1px solid var(--border-light); position: absolute; width: 100%; top: 50%; z-index: 1;">
+                <span class="header-text" style="background: var(--bg-surface); padding: 0 10px; position: relative; z-index: 2; color: var(--text-tertiary);">OR_MANUAL_ENTRY</span>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="sticker pink" style="position: static; display: block; text-align: center; margin-bottom: 20px; transform: none;">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                <label class="header-text">USER_HANDLE</label>
+                <input type="text" name="username" class="title-input" placeholder="ENTER_ID..." required>
+
+                <label class="header-text">PASSKEY</label>
+                <input type="password" name="password" class="title-input" placeholder="********" required>
+
+                <button type="submit" class="primary-btn" style="margin-top: 20px;">
+                    AUTHENTICATE ↗
+                </button>
+            </form>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <a href="{% url 'register' %}" class="header-text" style="text-decoration: underline; color: var(--accent-primary);">
+                    NO_IDENTITY? INITIALIZE_NEW_UNIT
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

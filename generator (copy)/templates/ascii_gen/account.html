@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ACCOUNT / ASCII_STUDIO{% endblock %}
+
+{% block content %}
+<div class="account-wrapper">
+    <!-- Account Header -->
+    <div class="account-header">
+        <div class="sticker blue">USER_PROFILE</div>
+        <h1 class="logo">ACCOUNT_CONTROL_PANEL</h1>
+        <p class="header-text">MANAGE_YOUR_IDENTITY_AND_SECURITY_SETTINGS</p>
+    </div>
+
+    <div class="account-grid">
+        <!-- Profile Card -->
+        <div class="account-card">
+            <div class="card-header">
+                <span class="header-text">IDENTITY_INFORMATION</span>
+                <span class="header-text" style="color: var(--accent-success);">ACTIVE</span>
+            </div>
+            
+            <div class="account-profile">
+                <div class="profile-avatar-large">
+                    {{ user.username|first|upper }}
+                </div>
+                <div class="profile-info">
+                    <h3 class="profile-username">{{ user.username|upper }}</h3>
+                    <p class="header-text">{{ user.email }}</p>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <span class="stat-number">{{ art_count|default:"0" }}</span>
+                            <span class="stat-label">ASCII_CREATIONS</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">{{ public_count|default:"0" }}</span>
+                            <span class="stat-label">PUBLIC_POSTS</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">{{ join_days|default:"0" }}</span>
+                            <span class="stat-label">DAYS_ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="account-actions">
+                <button class="account-btn" onclick="showModal('usernameModal')">
+                    <i class="fas fa-edit"></i> CHANGE_USERNAME
+                </button>
+                <button class="account-btn" onclick="showModal('emailModal')">
+                    <i class="fas fa-envelope"></i> UPDATE_EMAIL
+                </button>
+                <button class="account-btn" onclick="showModal('passwordModal')">
+                    <i class="fas fa-key"></i> CHANGE_PASSWORD
+                </button>
+                <a href="{% url 'verify_request' %}" class="account-btn verify-btn">
+                    <i class="fas fa-shield-alt"></i> VERIFY_IDENTITY
+                </a>
+            </div>
+        </div>
+
+        <!-- Security Card -->
+        <div class="account-card">
+            <div class="card-header">
+                <span class="header-text">SECURITY_SETTINGS</span>
+                <span class="header-text" style="color: var(--accent-warning);">PROTECTED</span>
+            </div>
+            
+            <div class="security-list">
+                <div class="security-item">
+                    <i class="fas fa-check-circle" style="color: var(--accent-success);"></i>
+                    <span>Two-factor authentication</span>
+                    <button class="security-toggle" onclick="toggle2FA()">ENABLE</button>
+                </div>
+                <div class="security-item">
+                    <i class="fas fa-history"></i>
+                    <span>Session history</span>
+                    <button class="security-toggle" onclick="viewSessions()">VIEW</button>
+
+                <div class="security-item">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Data retention</span>
+                    <button class="security-toggle danger" onclick="showModal('deleteModal')">
+                        DELETE_DATA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="account-card">
+            <div class="card-header">
+                <span class="header-text">USAGE_STATISTICS</span>
+                <span class="header-text">ANALYTICS</span>
+            </div>
+            
+            <div class="stats-chart">
+                <div id="usageChartPlaceholder" style="height: 150px; display: flex; align-items: center; justify-content: center; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <div style="text-align: center;">
+                        <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: var(--space-2);"></i>
+                        <p class="header-text" style="color: var(--text-tertiary);">CHART_DATA_UNAVAILABLE</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-details">
+                <div class="stat-detail">
+                    <span class="detail-label">Last login</span>
+                    <span class="detail-value">{{ last_login|date:"Y-m-d H:i" }}</span>
+                </div>
+                <div class="stat-detail">
+                    <span class="detail-label">Account created</span>
+                    <span class="detail-value">{{ user.date_joined|date:"Y-m-d" }}</span>
+                </div>
+                <div class="stat-detail">
+                    <span class="detail-label">Storage used</span>
+                    <span class="detail-value">{{ storage_used|default:"0" }} MB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone Card -->
+    <div class="account-card danger-zone">
+        <div class="card-header">
+            <span class="header-text" style="color: var(--accent-danger);">DANGER_ZONE</span>
+            <i class="fas fa-exclamation-triangle" style="color: var(--accent-danger);"></i>
+        </div>
+        
+        <div class="danger-actions">
+            <p class="warning-text">
+                <i class="fas fa-exclamation-circle"></i>
+                These actions are irreversible. Proceed with caution.
+            </p>
+            
+            <div class="danger-buttons">
+                <button class="danger-btn" onclick="exportData()">
+                    <i class="fas fa-download"></i> EXPORT_ALL_DATA
+                </button>
+                <button class="danger-btn" onclick="showModal('deleteModal')">
+                    <i class="fas fa-trash"></i> DELETE_ACCOUNT
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="usernameModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>CHANGE_USERNAME</h3>
+            <button class="modal-close" onclick="closeModal('usernameModal')">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'change_username' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <label class="header-text">CURRENT_USERNAME</label>
+                <input type="text" value="{{ user.username }}" disabled class="modal-input">
+                
+                <label class="header-text">NEW_USERNAME</label>
+                <input type="text" name="new_username" class="modal-input" placeholder="NEW_IDENTITY" required>
+                
+                <label class="header-text">CONFIRM_PASSWORD</label>
+                <input type="password" name="password" class="modal-input" placeholder="********" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn secondary" onclick="closeModal('usernameModal')">CANCEL</button>
+                <button type="submit" class="modal-btn primary">UPDATE</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="emailModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>UPDATE_EMAIL</h3>
+            <button class="modal-close" onclick="closeModal('emailModal')">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'change_email' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <label class="header-text">CURRENT_EMAIL</label>
+                <input type="email" value="{{ user.email }}" disabled class="modal-input">
+                
+                <label class="header-text">NEW_EMAIL</label>
+                <input type="email" name="new_email" class="modal-input" placeholder="NEW_CONTACT@NETWORK.COM" required>
+                
+                <label class="header-text">CONFIRM_PASSWORD</label>
+                <input type="password" name="password" class="modal-input" placeholder="********" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn secondary" onclick="closeModal('emailModal')">CANCEL</button>
+                <button type="submit" class="modal-btn primary">UPDATE</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="passwordModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>CHANGE_PASSWORD</h3>
+            <button class="modal-close" onclick="closeModal('passwordModal')">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'change_password' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <label class="header-text">CURRENT_PASSWORD</label>
+                <input type="password" name="current_password" class="modal-input" placeholder="********" required>
+                
+                <label class="header-text">NEW_PASSWORD</label>
+                <input type="password" name="new_password" class="modal-input" placeholder="********" required>
+                
+                <label class="header-text">CONFIRM_NEW_PASSWORD</label>
+                <input type="password" name="confirm_password" class="modal-input" placeholder="********" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn secondary" onclick="closeModal('passwordModal')">CANCEL</button>
+                <button type="submit" class="modal-btn primary">UPDATE</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header" style="border-color: var(--accent-danger);">
+            <h3 style="color: var(--accent-danger);">DELETE_ACCOUNT</h3>
+            <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'delete_account' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>This action cannot be undone. All your data will be permanently deleted.</p>
+                </div>
+                
+                <label class="header-text">TYPE_CONFIRMATION</label>
+                <input type="text" name="confirmation" class="modal-input" placeholder="Type 'DELETE {{ user.username|upper }}' to confirm" required>
+                
+                <label class="header-text">ENTER_PASSWORD</label>
+                <input type="password" name="password" class="modal-input" placeholder="********" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn secondary" onclick="closeModal('deleteModal')">CANCEL</button>
+                <button type="submit" class="modal-btn danger">DELETE_PERMANENTLY</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if messages %}
+<div class="message-container">
+    {% for message in messages %}
+    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+        <i class="fas fa-info-circle"></i>
+        <span>{{ message }}</span>
+        <button class="message-close" onclick="this.parentElement.style.display='none'">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+
+<script>
+    // Modal functions
+    function showModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    }
+    
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    }
+    
+    // Toggle functions
+    function toggle2FA() {
+        alert('Two-factor authentication feature coming soon!');
+    }
+    
+    function viewSessions() {
+        alert('Session history feature coming soon!');
+    }
+    
+    function exportData() {
+        alert('Data export feature coming soon!');
+    }
+    
+    // Close messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('.message');
+        messages.forEach(message => {
+            setTimeout(() => {
+                message.style.opacity = '0';
+                message.style.transform = 'translateX(100px)';
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 300);
+            }, 5000);
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('dropdownMenu');
+            const userBtn = document.querySelector('.user-btn');
+            
+            if (userBtn && dropdown && !userBtn.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    });
+    
+    // Toggle dropdown
+    function toggleDropdown() {
+        const dropdown = document.getElementById('dropdownMenu');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+</script>
+
+{% endblock %}

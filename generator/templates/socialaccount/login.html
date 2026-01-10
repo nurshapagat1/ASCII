@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}HANDSHAKE // ASCII_STUDIO{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --system-blue: #00d2ff;
+        --terminal-bg: #0f0f11;
+        --ui-border: #2a2a2e;
+        --ui-accent: #3d3d42;
+        --text-main: #e1e1e6;
+        --text-dim: #88888e;
+        --alert-red: #ff3e3e;
+        --glass: rgba(255, 255, 255, 0.03);
+    }
+
+    body {
+        background-color: var(--terminal-bg);
+        background-image: 
+            linear-gradient(var(--glass) 1px, transparent 1px),
+            linear-gradient(90deg, var(--glass) 1px, transparent 1px);
+        background-size: 30px 30px;
+        color: var(--text-main);
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    .module-wrapper {
+        max-width: 550px;
+        margin: 80px auto;
+        padding: 0 20px;
+    }
+
+    /* --- TERMINAL CARD --- */
+    .terminal-card {
+        background: #16161a;
+        border: 1px solid var(--ui-border);
+        position: relative;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        overflow: hidden;
+    }
+
+    /* Targeting Corners */
+    .terminal-card::before {
+        content: ''; position: absolute; top: -1px; left: -1px; width: 15px; height: 15px;
+        border-top: 2px solid var(--system-blue); border-left: 2px solid var(--system-blue);
+    }
+    .terminal-card::after {
+        content: ''; position: absolute; bottom: -1px; right: -1px; width: 15px; height: 15px;
+        border-bottom: 2px solid var(--system-blue); border-right: 2px solid var(--system-blue);
+    }
+
+    .card-header {
+        padding: 12px 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid var(--ui-border);
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: var(--system-blue);
+        letter-spacing: 2px;
+    }
+
+    /* --- CONTENT AREA --- */
+    .handshake-body {
+        padding: 40px;
+        text-align: center;
+    }
+
+    .uplink-icon {
+        font-size: 3rem;
+        color: var(--system-blue);
+        margin-bottom: 25px;
+        filter: drop-shadow(0 0 10px rgba(0, 210, 255, 0.3));
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(0.95); }
+    }
+
+    .handshake-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        margin-bottom: 15px;
+        letter-spacing: -0.5px;
+        text-transform: uppercase;
+    }
+
+    .handshake-warning {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        line-height: 1.6;
+        margin-bottom: 35px;
+        padding: 0 10px;
+    }
+
+    .google-label {
+        color: #fff;
+        font-weight: bold;
+        background: rgba(255,255,255,0.05);
+        padding: 2px 6px;
+        border: 1px solid var(--ui-accent);
+    }
+
+    /* --- BUTTONS --- */
+    .btn-terminal {
+        width: 100%;
+        background: var(--system-blue);
+        color: #000;
+        border: none;
+        padding: 15px;
+        font-family: inherit;
+        font-weight: 800;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        transition: 0.2s;
+    }
+
+    .btn-terminal:hover {
+        background: #fff;
+        transform: translateY(-2px);
+    }
+
+    .abort-link {
+        display: inline-block;
+        margin-top: 20px;
+        font-size: 0.7rem;
+        color: var(--alert-red);
+        text-decoration: none;
+        letter-spacing: 1px;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    .abort-link:hover {
+        color: #fff;
+        text-decoration: underline;
+    }
+
+    /* --- FOOTER STATUS --- */
+    .card-footer-status {
+        padding: 10px;
+        background: #000;
+        border-top: 1px solid var(--ui-border);
+        text-align: center;
+        font-size: 0.6rem;
+        color: var(--ui-accent);
+        letter-spacing: 1px;
+    }
+</style>
+
+<div class="module-wrapper">
+    <div style="margin-bottom: 20px;">
+        <span style="background: var(--system-blue); color: #000; padding: 2px 8px; font-size: 0.65rem; font-weight: 900;">EXTERNAL_UPLINK</span>
+    </div>
+
+    <div class="terminal-card">
+        <div class="card-header">
+            <span>PROTOCOL_HANDSHAKE</span>
+            <span>GOOGLE_OAUTH_v2</span>
+        </div>
+
+        <div class="handshake-body">
+            <i class="fas fa-satellite-dish uplink-icon"></i>
+            
+            <h2 class="handshake-title">Confirm_External_Redirect</h2>
+            
+            <p class="handshake-warning">
+                You are initiating a connection to an external authentication node. Identity validation will be processed via 
+                <span class="google-label">GOOGLE_SERVERS</span>.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-terminal">
+                    PROCEED_TO_REMOTE_HOST
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                </button>
+            </form>
+            
+            <a href="{% url 'login' %}" class="abort-link">
+                [!] ABORT_SEQUENCE
+            </a>
+        </div>
+
+        <div class="card-footer-status">
+            ENCRYPTION: TLS_1.3 // TUNNEL: AES_256_GCM // STATUS: PENDING_USER_AUTH
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 25px; font-size: 0.6rem; color: var(--text-dim);">
+        AUTHORIZED REDIRECTION PROTOCOL // NODE: {{ request.get_host|upper }}
+    </div>
+</div>
+
+<script>
+    // Visual feedback on click
+    document.querySelector('form').addEventListener('submit', function() {
+        const btn = document.querySelector('.btn-terminal');
+        btn.innerHTML = 'HANDSHAKING...';
+        btn.style.opacity = '0.7';
+        btn.style.pointerEvents = 'none';
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}HISTORY / ASCII_STUDIO{% endblock %}
+
+{% block content %}
+<div class="history-wrapper">
+    <!-- History Header -->
+    <div class="history-header">
+        <div class="sticker yellow">LOCAL_ARCHIVE</div>
+        <h1 class="logo">USER_STORAGE</h1>
+        <p class="header-text">YOUR_PERSONAL_ASCII_COLLECTION</p>
+    </div>
+
+    <div class="history-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-archive"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ user_art.count }}</h3>
+                <p>TOTAL_CREATIONS</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-globe"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ public_count }}</h3>
+                <p>PUBLIC_POSTS</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ private_count }}</h3>
+                <p>PRIVATE_WORKS</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ oldest_date|date:"M y" }}</h3>
+                <p>FIRST_CREATION</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-actions">
+        <a href="{% url 'index' %}" class="action-btn primary">
+            <i class="fas fa-plus-circle"></i> NEW_INSTANCE
+        </a>
+        {% if user_art %}
+        <button class="action-btn secondary" onclick="selectAllArt()">
+            <i class="fas fa-check-square"></i> SELECT_ALL
+        </button>
+        <button class="action-btn danger" onclick="clearAllArt()">
+            <i class="fas fa-trash-alt"></i> CLEAR_ALL
+        </button>
+        {% endif %}
+    </div>
+
+    {% if user_art %}
+    <div class="history-grid">
+        {% for art in user_art %}
+        <article class="art-card" data-id="{{ art.id }}">
+            <div class="art-card-header">
+                <div class="art-info">
+                    <h3 class="art-title">{{ art.title|upper }}</h3>
+                    <div class="art-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-calendar"></i>
+                            {{ art.created_at|date:"d.m.y" }}
+                        </span>
+                        <span class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            {{ art.created_at|date:"H:i" }}
+                        </span>
+                    </div>
+                </div>
+                <div class="art-status">
+                    {% if art.is_public %}
+                    <span class="status-badge public">
+                        <i class="fas fa-globe"></i> PUBLIC
+                    </span>
+                    {% else %}
+                    <span class="status-badge private">
+                        <i class="fas fa-lock"></i> PRIVATE
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="art-preview" onclick="viewArtFullscreen('{{ art.id }}')">
+                <div class="ascii-canvas">
+                    <pre>{{ art.ascii_text }}</pre>
+                </div>
+                <div class="preview-overlay">
+                    <i class="fas fa-expand"></i>
+                    <span>CLICK_TO_EXPAND</span>
+                </div>
+            </div>
+
+            <div class="art-card-footer">
+                <div class="art-actions">
+                    <button class="action-icon copy" onclick="copyArtText('{{ art.ascii_text|escapejs }}', this)">
+                        <i class="fas fa-copy"></i>
+                        <span>SYNC</span>
+                    </button>
+                    
+                    {% if art.is_public %}
+                    <button class="action-icon share" onclick="shareArt('{{ art.id }}')">
+                        <i class="fas fa-share-alt"></i>
+                        <span>SHARE</span>
+                    </button>
+                    {% else %}
+                    <button class="action-icon lock" onclick="toggleArtVisibility('{{ art.id }}')">
+                        <i class="fas fa-lock-open"></i>
+                        <span>MAKE_PUBLIC</span>
+                    </button>
+                    {% endif %}
+                    
+                    <form action="{% url 'delete_art' art.id %}" method="POST" class="delete-form">
+                        {% csrf_token %}
+                        <button type="submit" class="action-icon delete" onclick="return confirmDelete('{{ art.title }}')">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>ERASE</span>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="art-id">
+                    <i class="fas fa-fingerprint"></i>
+                    <span>ID: {{ art.id|add:"1000" }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-archive"></i>
+        </div>
+        <h2>DATABASE_EMPTY</h2>
+        <p>NO_DATA_HAS_BEEN_COMMITTED_TO_THIS_UNIT.</p>
+        <a href="{% url 'index' %}" class="primary-btn">
+            <i class="fas fa-plus-circle"></i> CREATE_FIRST_ART
+        </a>
+    </div>
+    {% endif %}
+
+    {% if user_art %}
+    <div class="history-footer">
+        <div class="pagination-info">
+            <span>SHOWING {{ user_art.count }} OF {{ user_art.count }} ITEMS</span>
+        </div>
+        <div class="export-options">
+            <button class="export-btn" onclick="exportAllArt()">
+                <i class="fas fa-download"></i> EXPORT_ALL
+            </button>
+            <button class="export-btn" onclick="printGallery()">
+                <i class="fas fa-print"></i> PRINT_GALLERY
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Fullscreen Modal -->
+<div id="fullscreenModal" class="modal">
+    <div class="modal-content" style="max-width: 90vw; max-height: 90vh;">
+        <div class="modal-header">
+            <h3 id="modalTitle">ASCII_ART_PREVIEW</h3>
+            <button class="modal-close" onclick="closeFullscreen()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 0;">
+            <div class="fullscreen-canvas">
+                <pre id="fullscreenAscii"></pre>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn secondary" onclick="closeFullscreen()">
+                <i class="fas fa-times"></i> CLOSE
+            </button>
+            <button class="modal-btn primary" onclick="copyCurrentArt()">
+                <i class="fas fa-copy"></i> COPY_TEXT
+            </button>
+            <button class="modal-btn" onclick="downloadArt()">
+                <i class="fas fa-download"></i> DOWNLOAD_TXT
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Copy ASCII text with feedback
+    function copyArtText(text, button) {
+        navigator.clipboard.writeText(text).then(() => {
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i><span>COPIED</span>';
+            button.style.background = 'var(--accent-success)';
+            button.style.color = 'white';
+            button.style.borderColor = 'var(--accent-success)';
+            
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+                button.style.background = '';
+                button.style.color = '';
+                button.style.borderColor = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy text to clipboard');
+        });
+    }
+    
+    // View art in fullscreen modal
+    let currentArtId = null;
+    let currentArtText = '';
+    
+    function viewArtFullscreen(artId) {
+        const artCard = document.querySelector(`[data-id="${artId}"]`);
+        const artTitle = artCard.querySelector('.art-title').textContent;
+        const artText = artCard.querySelector('pre').textContent;
+        
+        currentArtId = artId;
+        currentArtText = artText;
+        
+        document.getElementById('modalTitle').textContent = artTitle;
+        document.getElementById('fullscreenAscii').textContent = artText;
+        document.getElementById('fullscreenModal').style.display = 'flex';
+        
+        // Prevent body scrolling
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeFullscreen() {
+        document.getElementById('fullscreenModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    
+    function copyCurrentArt() {
+        navigator.clipboard.writeText(currentArtText).then(() => {
+            showToast('ASCII text copied to clipboard!');
+        });
+    }
+    
+    function downloadArt() {
+        const blob = new Blob([currentArtText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ascii_art_${currentArtId}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Art downloaded as text file!');
+    }
+    
+    // Share art (placeholder)
+    function shareArt(artId) {
+        showToast('Share feature coming soon!');
+    }
+    
+    // Toggle art visibility (placeholder)
+    function toggleArtVisibility(artId) {
+        showToast('Visibility toggle feature coming soon!');
+    }
+    
+    // Select all art (placeholder)
+    function selectAllArt() {
+        showToast('Select all feature coming soon!');
+    }
+    
+    // Clear all art (placeholder)
+    function clearAllArt() {
+        if (confirm('Are you sure you want to clear all your ASCII art? This action cannot be undone.')) {
+            showToast('Clear all feature coming soon!');
+        }
+    }
+    
+    // Export all art (placeholder)
+    function exportAllArt() {
+        showToast('Export all feature coming soon!');
+    }
+    
+    // Print gallery (placeholder)
+    function printGallery() {
+        showToast('Print gallery feature coming soon!');
+    }
+    
+    // Confirm deletion
+    function confirmDelete(title) {
+        return confirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`);
+    }
+    
+    // Toast notification
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            <span>${message}</span>
+        `;
+        
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent-primary);
+            color: white;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100px)';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+    
+    // Close modal on ESC key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.getElementById('fullscreenModal').style.display === 'flex') {
+            closeFullscreen();
+        }
+    });
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('fullscreenModal');
+        if (event.target === modal) {
+            closeFullscreen();
+        }
+    };
+    
+    // Calculate stats (you need to pass these from Django view)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate cards on load
+        const cards = document.querySelectorAll('.art-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+        
+        // Calculate public and private counts
+        const publicCount = document.querySelectorAll('.status-badge.public').length;
+        const privateCount = document.querySelectorAll('.status-badge.private').length;
+        
+        // Update stats if needed (you should pass these from Django view)
+        // For now, we'll just display what we have
+        console.log(`Public: ${publicCount}, Private: ${privateCount}`);
+    });
+</script>
+
+{% endblock %}
