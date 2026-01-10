@@ -50,19 +50,14 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+# Allauth settings - you can keep this for scope/config
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'APP': {
-            'client_id': 'YOUR_CLIENT_ID_HERE',
-            'secret': 'YOUR_CLIENT_SECRET_HERE',
-            'key': ''
-        },
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {'access_type': 'online'},
+        # NO client_id or secret here!
     }
 }
-
-
 SITE_ID = 1
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
